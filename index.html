@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>reveal.js</title>
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/black.css">
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h1>Ember Data</h1>
+					<ul>
+						<li>API Call life cycle</li>
+						<li>Consuming Reddit API</li>
+						<li>hasMany & belongsTo Relationships</li>
+						<li>PloyMorphic Relationships</li>
+					</ul>
+				</section>
+				<section>
+					<h1>API LifeCycle in ember data</h1>
+				</section>
+				<section>
+					<img data-src="images/lifecycle.png" height="100%" width="700px" />
+				</section>
+				<section>
+					<h1>hasMany & belongsTo Relationship</h1>
+				</section>
+				<section data-auto-animate-unmatched="fade">
+					<section data-auto-animate>
+						<h3>with inverse</h3>
+						<pre data-id="code"><code data-line-numbers class="hljs" data-trim>
+							// post.js
+							export default class Post extends Model {
+							  @attr('string') title;
+							  @attr('string') description;
+							  @belongsTo('user', { inverse: "posts" }) user;
+							}
+
+							// user.js
+							export default class User extends Model {
+							  @attr('string') name;
+							  @hasMany('post', { inverse: "user" }) posts;
+							}
+						</code></pre>
+					</section>
+					<section data-auto-animate>
+							<h3>Without inverse</h3>
+							<pre data-id="code"><code data-line-numbers class="hljs" data-trim>
+								// post.js
+								export default class Post extends Model {
+								  @attr('string') title;
+								  @attr('string') description;
+								  @belongsTo('user') user;
+								}
+
+								// user.js
+								export default class User extends Model {
+								  @attr('string') name;
+								  @hasMany('post') posts;
+								}
+							</code></pre>
+					</section>
+				</section>
+				<section>
+					<h2>So Ember does its best to find relationships</h2>
+					<p>Setting inverse to null removes the relationship</p>
+					<pre data-id="code"><code data-line-numbers class="hljs" data-trim>
+						// post.js
+						export default class Post extends Model {
+						  @attr('string') title;
+						  @attr('string') description;
+						  @belongsTo('user', { inverse: null }) user;
+						}
+
+						// user.js
+						export default class User extends Model {
+						  @attr('string') name;
+						  @hasMany('post', { inverse: null }) posts;
+						}
+					</code></pre>
+				</section>
+			</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+			});
+		</script>
+	</body>
+</html>
