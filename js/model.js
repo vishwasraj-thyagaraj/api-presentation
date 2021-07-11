@@ -4,13 +4,19 @@ import Model, { attr, hasMany, belongsTo } from '@ember-data/model';
 export default class Post extends Model {
   @attr('string') title;
   @attr('string') description;
-  @belongsTo('user', { inverse: 'posts' }) user;
   @belongsTo('user') user;
 }
 
 // user.js
 export default class User extends Model {
   @attr('string') name;
-  @hasMany('post', { inverse: 'user' }) posts;
-  @hasMany('post') posts;
+  @hasMany('post', { async: false }) posts;
+  @hasMany('post', { async: true }) posts;
+}
+
+var a = user: { 
+  id: 1, 
+  name: 'User 1', 
+  posts,
+  posts: [1, 2, 3, 4, 5]
 }

@@ -53,7 +53,7 @@
 						</code></pre>
 					</section>
 					<section data-auto-animate>
-							<h3>Without inverse</h3>
+							<h3>Without inverse (Ember does its best to find relationships)</h3>
 							<pre data-id="code"><code data-line-numbers class="hljs" data-trim>
 								// post.js
 								export default class Post extends Model {
@@ -69,24 +69,107 @@
 								}
 							</code></pre>
 					</section>
+					<section data-auto-animate>
+						<p>Setting inverse to null removes the relationship</p>
+						<pre data-id="code"><code data-line-numbers class="hljs" data-trim>
+							// post.js
+							export default class Post extends Model {
+							  @attr('string') title;
+							  @attr('string') description;
+							  @belongsTo('user', { inverse: null }) user;
+							}
+
+							// user.js
+							export default class User extends Model {
+							  @attr('string') name;
+							  @hasMany('post', { inverse: null }) posts;
+							}
+						</code></pre>
+					</section>
 				</section>
 				<section>
-					<h2>So Ember does its best to find relationships</h2>
-					<p>Setting inverse to null removes the relationship</p>
-					<pre data-id="code"><code data-line-numbers class="hljs" data-trim>
-						// post.js
-						export default class Post extends Model {
-						  @attr('string') title;
-						  @attr('string') description;
-						  @belongsTo('user', { inverse: null }) user;
-						}
+					<section>
+						<h6><u>Fetching data for hasMany/belongsTo relationships</u></h6>
+						<ul>
+							<li>Lazy Loaded</li>
+							<li>Eager Loaded (Side Loaded)</li>
+							<li>Lazy Loaded (ember-data-has-many-query addon + components)</li>
+						</ul>
+					</section>
+				</section>
+				<section data-auto-animate-unmatched="fade">
+					<section data-auto-animate style="font-size: 28px;">
+						<pre data-id="code" style="height: 100vh !important;"><code data-line-numbers class="hljs" data-trim>
+							// Lazy Loaded Example
+							// API Response
+							{
+							  user: { 
+							    id: 1,
+							    name: 'Vishwas',
+							    posts: [1, 2]
+							  }
+							}
 
-						// user.js
-						export default class User extends Model {
-						  @attr('string') name;
-						  @hasMany('post', { inverse: null }) posts;
-						}
-					</code></pre>
+							// models/user.js
+							export default class User extends Model {
+							  @attr('string') name;
+							  @hasMany('post', { async: true }) posts;
+							  // make api call using user.posts
+							}
+
+							// serializers/user.js
+							import ApplicationSerializer as APS from './application';
+
+							export default class UserSerializer extends APS {}
+						</code></pre>
+					</section>
+					<section data-auto-animate style="font-size: 28px;">
+						<pre data-id="code" style="height: 100vh !important;"><code data-line-numbers="7-11,17-18,23,25-29" class="hljs" data-trim>
+							// Eager Loaded
+							// API Response
+							{
+							  user: { 
+							    id: 1,
+							    name: 'Vishwas',
+							    posts: [
+							      { id: 1, title: 'Test 1', description: 'Description 1' },
+							      { id: 2, title: 'Test 2', description: 'Description 2' }
+							    ]
+							  }
+							}
+
+							// models/user.js
+							export default class User extends Model {
+							  @attr('string') name;
+							  @hasMany('post', { async: false }) posts;
+							  // no api call required
+							}
+
+							// serializers/user.js
+							import ApplicationSerializer as APS from './application';
+							import { EmbeddedRecordsMixin as ERM } from '@ember-data/serializer/rest';
+
+							export default class UserSerializer extends APS.extend(ERM) {
+							  attrs = {
+							    posts : {
+							      deserialize: 'records'
+							    }
+							  }
+							}
+						</code></pre>
+					</section>
+				</section>
+				<section>
+					<h1>References</h1>
+					<ul>
+						<li><a href="https://guides.emberjs.com/release/models/relationships/">Ember Data Guides on relationships</a></li>
+						<li><a href="https://stackoverflow.com/a/25700619/1404040">Inverse Relationship</a></li>
+						<li><a href="https://emberigniter.com/adding-query-parameters-hasmany-relationship">Fetch hasMany using query</a></li>
+						<li><a href="https://github.com/mdehoog/ember-data-has-many-query">Addon for making model the ability to perform hasMany query</a></li>
+						<li>
+							<a href="https://api.emberjs.com/ember-data/3.27/classes/RESTAdapter/methods/findHasMany?anchor=findHasMany">Custom handling of hasMany without the addon (probably have to do more)</a>
+						</li>
+					</ul>
 				</section>
 			</div>
 		</div>
@@ -101,7 +184,7 @@
 			// - https://revealjs.com/config/
 			Reveal.initialize({
 				hash: true,
-
+				disableLayout: false,
 				// Learn about plugins: https://revealjs.com/plugins/
 				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
 			});
