@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+		<title>Ember Data</title>
 
 		<link rel="stylesheet" href="dist/reset.css">
 		<link rel="stylesheet" href="dist/reveal.css">
@@ -20,9 +20,9 @@
 					<h1>Ember Data</h1>
 					<ul>
 						<li>API Call life cycle</li>
-						<li>Consuming Reddit API</li>
 						<li>hasMany & belongsTo Relationships</li>
 						<li>PloyMorphic Relationships</li>
+						<li>Consuming Reddit API</li>
 					</ul>
 				</section>
 				<section>
@@ -33,56 +33,60 @@
 				</section>
 				<section>
 					<h1>hasMany & belongsTo Relationship</h1>
+					<p>We will be seeing hasMany explicitly. All these applies to belongsTo as well.</p>
+				</section>
+				<section>
+					<h1>Fetch all posts through user</h1>
 				</section>
 				<section data-auto-animate-unmatched="fade">
 					<section data-auto-animate>
-						<h3>with inverse</h3>
+						<h3>Model Presentation (with inverse)</h3>
 						<pre data-id="code"><code data-line-numbers class="hljs" data-trim>
+							// user.js
+							export default class User extends Model {
+							  @attr('string') name;
+							  @hasMany('post', { inverse: "user" }) posts;
+							}
+
 							// post.js
 							export default class Post extends Model {
 							  @attr('string') title;
 							  @attr('string') description;
 							  @belongsTo('user', { inverse: "posts" }) user;
 							}
-
-							// user.js
-							export default class User extends Model {
-							  @attr('string') name;
-							  @hasMany('post', { inverse: "user" }) posts;
-							}
 						</code></pre>
 					</section>
 					<section data-auto-animate>
-							<h3>Without inverse (Ember does its best to find relationships)</h3>
+							<h3>Model Presentation - Without inverse (Ember does its best to find relationships)</h3>
 							<pre data-id="code"><code data-line-numbers class="hljs" data-trim>
+								// user.js
+								export default class User extends Model {
+								  @attr('string') name;
+								  @hasMany('post') posts;
+								}
+
 								// post.js
 								export default class Post extends Model {
 								  @attr('string') title;
 								  @attr('string') description;
 								  @belongsTo('user') user;
 								}
-
-								// user.js
-								export default class User extends Model {
-								  @attr('string') name;
-								  @hasMany('post') posts;
-								}
 							</code></pre>
 					</section>
 					<section data-auto-animate>
-						<p>Setting inverse to null removes the relationship</p>
+						<p>Model Presentation - Setting inverse to null removes the relationship</p>
 						<pre data-id="code"><code data-line-numbers class="hljs" data-trim>
+							// user.js
+							export default class User extends Model {
+							  @attr('string') name;
+							  @hasMany('post', { inverse: null }) posts;
+							}
+
 							// post.js
 							export default class Post extends Model {
 							  @attr('string') title;
 							  @attr('string') description;
 							  @belongsTo('user', { inverse: null }) user;
-							}
-
-							// user.js
-							export default class User extends Model {
-							  @attr('string') name;
-							  @hasMany('post', { inverse: null }) posts;
 							}
 						</code></pre>
 					</section>
@@ -96,6 +100,9 @@
 							<li>Lazy Loaded (ember-data-has-many-query addon + components)</li>
 						</ul>
 					</section>
+				</section>
+				<section>
+					<h3>Representation of api structure model & serializers</h3>
 				</section>
 				<section data-auto-animate-unmatched="fade">
 					<section data-auto-animate style="font-size: 28px;">
@@ -114,7 +121,7 @@
 							export default class User extends Model {
 							  @attr('string') name;
 							  @hasMany('post', { async: true }) posts;
-							  // make api call using user.posts
+							  // api call is made for each id
 							}
 
 							// serializers/user.js
@@ -159,17 +166,131 @@
 						</code></pre>
 					</section>
 				</section>
+				<section style="font-size: 30px; text-align: left;">
+					<h3>Both the methods have some cons</h3>
+					<p style="text-decoration: underline;">Lazy Loaded</p>
+					<ul>
+						<li>For 2 posts we make (/posts/1 & /posts/2), For N records we have to make N+1(parent api call) queries</li>
+						<li>Wont work for paginated API's</li>
+					</ul>
+					<p style="text-decoration: underline;">Eager Loaded</p>
+					<ul>
+						<li>The payload size increases as the number of entities are loaded</li>
+						<li>Wont work for paginated API's</li>
+					</ul>
+				</section>
+				<section>
+					<h3>How do we solve then?</h3>
+				</section>
+				<section>
+					<h3>Two Solutions</h3>
+					<ul>
+						<li>Using <span style="color:#888">"ember-data-has-many-query"</span> addon <pre><code>user.query('posts', { page: 1 })</code></pre></li>
+						<li>Remove the relationship (hasMany) and use query on the model directly<pre><code>post.query({ page: 1 })</code></pre></li>
+					</ul>
+					In Both cases, the <span style="color: #888;">model</span> can be given to table or ember-infinity (infinite scrolling)
+				</section>
+				<section>
+					<h3>Pros of using model.query</h3>
+					<ul>
+						<li>Works for paginated API's</li>
+						<li>No N+1 queries</li>
+						<li>No issue with payload sizes as we are restricted to per page limit (defaults to 30 in our app)</li>
+					</ul>
+				</section>
+				<section>
+					<h3>Demo for hasMany Relationships</h3>
+					<a href="http://localhost:4205/" target="_blank">Blog</a>
+				</section>
+				<section>
+					<h3>Polymorphic Relationships</h3>
+					<p>In a nutshell it's just inheritance</p>
+				</section>
+				<section data-auto-animate style="font-size: 28px;">
+					<pre data-id="code" style="height: 100vh !important;"><code data-line-numbers="2-8,11,13,17,19,25,27" class="hljs" data-trim>
+						// models/feed.js
+						export default class Feed extends Model {
+						  @attr('string') title;
+						  @attr('string') url;
+						  get feedType() => (this.constructor.modelName);
+
+						  @belongsTo('user') user;
+						}
+
+						// models/user.js
+						export default class User extends Model {
+						  @attr('string') name;
+						  @hasMany('feed', { polymorphic: true, async: false }) feeds;
+						}
+
+						// models/video.js
+						import Feed from './feed';
+
+						export default class Video extends Feed {
+						  @attr('number') length;
+						  get formatted() => (`${parseFloat(this.length/60).toFixed(1)} hour(s)`);
+						}
+
+						// models/image.js
+						import Feed from './feed';
+
+						export default class Image extends Feed {
+						  @attr('number') size;
+						  get formatted() => (`${this.size/1000}Kb`);
+						}
+					</code></pre>
+				</section>
+				<section data-auto-animate-unmatched="fade">
+					<section data-auto-animate>
+						<h3>API structure for lazy loading</h3>
+						<pre data-id="code"><code data-line-numbers class="hljs" data-trim>
+							user: { 
+							  id: 1, 
+							  name: 'Vishwas',
+							  feeds: [
+							    { id: 1, type: 'image' },
+							    { id: 2, type: 'video' }
+							  ]
+							}
+						</code></pre>
+					</section>
+					<section data-auto-animate>
+						<h3>API structure for eager loading</h3>
+						<pre data-id="code"><code data-line-numbers class="hljs" data-trim>
+							user: { 
+							  id: 1, 
+							  name: 'Vishwas',
+							  feeds: [
+							    { id:1, title: 'Test', url: '/test.jpg', type: 'image', size: 37000 },
+							    { id:2, title: 'Test', url: '/test.mp4', type: 'video', length: 60 },
+							  ]
+							}
+						</code></pre>
+						<p>Rest of the setup like addings attrs needs to be done in serializers</p>
+					</section>
+				</section>
+				<section>
+					<h3>Demo for hasMany Relationships</h3>
+					<a href="http://localhost:4204/" target="_blank">Feeds</a>
+				</section>
+				<section>
+					<h3>Demo for Reddit API</h3>
+					<a href="http://localhost:4203/" target="_blank">Reddit</a>
+				</section>
 				<section>
 					<h1>References</h1>
 					<ul>
-						<li><a href="https://guides.emberjs.com/release/models/relationships/">Ember Data Guides on relationships</a></li>
-						<li><a href="https://stackoverflow.com/a/25700619/1404040">Inverse Relationship</a></li>
-						<li><a href="https://emberigniter.com/adding-query-parameters-hasmany-relationship">Fetch hasMany using query</a></li>
-						<li><a href="https://github.com/mdehoog/ember-data-has-many-query">Addon for making model the ability to perform hasMany query</a></li>
+						<li><a target="_blank" href="https://guides.emberjs.com/release/models/relationships/">Ember Data Guides on relationships</a></li>
+						<li><a target="_blank" href="https://stackoverflow.com/a/25700619/1404040">Inverse Relationship</a></li>
+						<li><a target="_blank" href="https://emberigniter.com/adding-query-parameters-hasmany-relationship">Fetch hasMany using query</a></li>
+						<li><a target="_blank" href="https://github.com/mdehoog/ember-data-has-many-query">Addon for making model the ability to perform hasMany query</a></li>
 						<li>
-							<a href="https://api.emberjs.com/ember-data/3.27/classes/RESTAdapter/methods/findHasMany?anchor=findHasMany">Custom handling of hasMany without the addon (probably have to do more)</a>
+							<a target="_blank" href="https://api.emberjs.com/ember-data/3.27/classes/RESTAdapter/methods/findHasMany?anchor=findHasMany">Custom handling of hasMany without the addon (probably have to do more)</a>
 						</li>
 					</ul>
+				</section>
+				<section>
+					<h1>Thank you</h1>
 				</section>
 			</div>
 		</div>
